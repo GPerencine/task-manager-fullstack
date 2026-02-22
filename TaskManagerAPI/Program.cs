@@ -73,4 +73,6 @@ app.MapDelete("/tasks/{id}", async (int id, AppDbContext db) =>
     return Results.NoContent();
 });
 
+app.MapGet("/", () => "API Running");
+
 app.Run();
