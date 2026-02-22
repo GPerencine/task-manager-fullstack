@@ -1,4 +1,4 @@
-import { getTasks, createTask, deleteTask } from "./services/api.js";
+import { getTasks, createTask, deleteTask, updateTask } from "./services/api.js";
 
 const list = document.getElementById("taskList");
 const loading = document.getElementById("loading");
@@ -12,8 +12,14 @@ async function loadTasks() {
         
         tasks.forEach(task => {
             const li = document.createElement("li");
+            li.className = `task-item ${task.isCompleted ? 'completed' : ''}`;
+            
             li.innerHTML = `
-                <div class="task-content">
+                <input type="checkbox" class="task-checkbox" 
+                    ${task.isCompleted ? 'checked' : ''} 
+                    onchange="handleToggle(${task.id}, '${task.title}', '${task.description}', this.checked)">
+                
+                <div class="task-info-wrapper">
                     <strong>${task.title}</strong>
                     <span>${task.description || 'Sem descrição'}</span>
                 </div>
@@ -29,23 +35,49 @@ async function loadTasks() {
 }
 
 async function handleSave() {
-    const title = document.getElementById("title").value;
-    const description = document.getElementById("description").value;
+    const titleInput = document.getElementById("title");
+    const descInput = document.getElementById("description");
 
-    if (!title) return alert("O título é obrigatório!");
+    if (!titleInput.value) return alert("O título é obrigatório!");
 
     try {
-        await createTask({ title, description, isCompleted: false });
+        await createTask({ 
+            title: titleInput.value, 
+            description: descInput.value, 
+            isCompleted: false 
+        });
+        
         message.style.color = "green";
         message.innerText = "Tarefa adicionada!";
-        document.getElementById("title").value = "";
-        document.getElementById("description").value = "";
+        
+        // LIMPAR MENSAGEM: Some após 3 segundos
+        setTimeout(() => {
+            message.innerText = "";
+        }, 3000);
+
+        titleInput.value = "";
+        descInput.value = "";
         loadTasks();
     } catch (error) {
         message.style.color = "red";
         message.innerText = "Erro ao salvar.";
     }
 }
+
+// NOVA FUNÇÃO: Alterna entre concluída e pendente
+window.handleToggle = async (id, title, description, isChecked) => {
+    try {
+        await updateTask(id, { 
+            id, 
+            title, 
+            description, 
+            isCompleted: isChecked 
+        });
+        loadTasks(); // Recarrega para aplicar os estilos de riscado
+    } catch (error) {
+        alert("Erro ao atualizar tarefa.");
+    }
+};
 
 window.handleDelete = async (id) => {
     if (!confirm("Deseja excluir esta tarefa?")) return;
@@ -59,5 +91,4 @@ window.handleDelete = async (id) => {
 
 document.getElementById("btnSave").addEventListener("click", handleSave);
 
-// Inicializa
 loadTasks();
