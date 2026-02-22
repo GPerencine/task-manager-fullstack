@@ -1,113 +1,51 @@
-# 🗂️ Task Manager - Full Stack (.NET 8 + JavaScript)
+# 🗂️ Task Manager - Full Stack
 
-Aplicação Full Stack para gerenciamento de tarefas, desenvolvida com .NET 8 no backend e JavaScript puro no frontend.
+Aplicação robusta de gerenciamento de tarefas que utiliza o poder do **.NET 8** no backend e a leveza do **JavaScript Vanilla** no frontend. 
 
-O projeto permite criar, listar, atualizar e remover tarefas, com persistência em banco de dados SQLite e integração completa via API REST.
-
----
-🧩 Tecnologias Utilizadas
-
-C#
-
-ASP.NET Core
-
-Entity Framework Core
-
-SQLite
-
-HTML
-
-CSS
-
-JavaScript
-
-Docker
-
-Render
-
-Vercel
-
-🎯 Objetivo do Projeto
-
-Projeto desenvolvido com foco em:
-
-Prática de desenvolvimento Full Stack
-
-Integração Frontend ↔ Backend
-
-Deploy em ambiente real
-
-Construção de portfólio profissional
-## 🧠 Arquitetura
-
-O projeto é dividido em duas partes:
-
-### 🔹 Backend (API REST)
-- .NET 8 Minimal API
-- Entity Framework Core
-- SQLite
-- Swagger
-- CORS configurado
-- Deploy via Docker no Render
-
-### 🔹 Frontend
-- HTML5
-- CSS3
-- JavaScript 
-- Consumo da API via Fetch
-- Deploy na Vercel
+O projeto demonstra a implementação de um CRUD completo, comunicação assíncrona entre domínios diferentes (CORS) e deploy containerizado.
 
 ---
 
-## 🚀 Funcionalidades
+## 🚀 Demonstração
 
-- ✅ Criar nova tarefa  
-- 📋 Listar tarefas  
-- ✏️ Atualizar tarefa  
-- ❌ Deletar tarefa  
-- 🔎 Filtrar por concluídas / pendentes  
-- ⏳ Loading e feedback visual  
-- 🌐 Integração real com API em produção  
+- **Frontend (Vercel):** https://task-manager-fullstack-nu-neon.vercel.app/
+- **Backend (Render):** https://task-manager-fullstack-tcui.onrender.com/tasks
 
 ---
 
-## 📡 Endpoints da API
+## 🛠️ Tecnologias e Ferramentas
 
-Base URL: https://task-manager-fullstack-tcui.onrender.com
+### **Backend**
+* **C# / .NET 8:** Minimal APIs para alta performance.
+* **Entity Framework Core:** ORM para manipulação do banco de dados.
+* **SQLite:** Banco de dados relacional leve.
+* **Swagger:** Documentação automática da API.
+* **Docker:** Containerização para garantir consistência entre ambientes.
 
-Caso apareça qualquer coisa diferente de 'API Running',
-a API não estará funcionando.
-
-| Método | Endpoint        | Descrição |
-|--------|-----------------|------------|
-| GET    | /tasks          | Lista todas as tarefas |
-| GET    | /tasks/{id}     | Busca tarefa por ID |
-| POST   | /tasks          | Cria nova tarefa |
-| PUT    | /tasks/{id}     | Atualiza tarefa |
-| DELETE | /tasks/{id}     | Remove tarefa |
+### **Frontend**
+* **JavaScript (ES6+):** Manipulação de DOM e consumo de API (Fetch).
+* **HTML5 / CSS3:** Interface responsiva com foco em UX moderna (Design Clean).
 
 ---
 
-## 🗄️ Banco de Dados
+## 🧠 Arquitetura e Soluções Técnicas
 
-- SQLite
-- Criação automática com `Database.EnsureCreated()`
-- Armazenamento em ambiente Linux via `/tmp/tasks.db` (Render)
+### **Comunicação Cross-Origin (CORS)**
+Implementada política de CORS no middleware do ASP.NET para permitir que o frontend hospedado na Vercel consumisse os recursos da API no Render de forma segura.
 
----
+### **Persistência de Dados**
+Uso do SQLite em ambiente de container no Render, utilizando o diretório `/tmp` para persistência temporária do arquivo `.db`.
 
-## 🐳 Deploy
-
-### 🔹 Backend (Render)
-- Container Docker
-- .NET 8
-- API em produção
-
-👉 Backend:  https://task-manager-fullstack-tcui.onrender.com/tasks
-
+### **Interface Reativa**
+O frontend foi estruturado como um módulo JavaScript, garantindo que as funções de criação, deleção e alteração de status (`isCompleted`) reflitam instantaneamente na UI e no banco de dados.
 
 ---
 
-### 🔹 Frontend (Vercel)
+## 📡 API Endpoints
 
-👉 Frontend:  https://task-manager-fullstack-nu-neon.vercel.app/
+| Método | Endpoint | Descrição |
+| :--- | :--- | :--- |
+| `GET` | `/tasks` | Lista todas as tarefas |
+| `POST` | `/tasks` | Cria uma nova tarefa |
+| `PUT` | `/tasks/{id}` | Atualiza status (concluído/pendente) |
+| `DELETE` | `/tasks/{id}` | Remove uma tarefa |
