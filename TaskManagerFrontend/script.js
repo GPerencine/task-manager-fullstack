@@ -1,10 +1,10 @@
-const apiUrl = "http://localhost:5087/tasks";
+const apiUrl = "https://task-manager-fullstack-tcui.onrender.com//tasks";
 
 import { getTasks, createTask, deleteTask } from "./services/api.js";
 import { renderTask } from "./components/task.js";
 
 async function loadTasks(filter = "all") {
-    const response = await fetch("http://localhost:5087/tasks");
+    const response = await fetch(`${apiUrl}`);
     const tasks = await response.json();
 
     const list = document.getElementById("taskList");
@@ -44,7 +44,7 @@ async function createTask() {
     message.innerText = "";
 
     try {
-        const response = await fetch("http://localhost:5087/tasks", {
+        const response = await fetch(`${apiUrl}`, {
             method: "POST",
             headers: {
                 "Content-Type": "application/json"
@@ -74,7 +74,7 @@ async function deleteTask(id) {
     const confirmDelete = confirm("Tem certeza que deseja deletar esta tarefa?");
     if (!confirmDelete) return;
 
-    await fetch(`http://localhost:5087/tasks/${id}`, {
+    await fetch(`${apiUrl}/${id}`, {
         method: "DELETE"
     });
 
