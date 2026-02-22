@@ -37,8 +37,6 @@ if (app.Environment.IsDevelopment())
 
 app.UseCors("AllowAll");
 
-app.UseHttpsRedirection();
-
 // =====================
 // ENDPOINTS
 // =====================
@@ -87,5 +85,11 @@ app.MapDelete("/tasks/{id}", async (int id, AppDbContext db) =>
 
     return Results.NoContent();
 });
+
+using (var scope = app.Services.CreateScope())
+{
+    var db = scope.ServiceProvider.GetRequiredService<AppDbContext>();
+    db.Database.EnsureCreated();
+}
 
 app.Run();
