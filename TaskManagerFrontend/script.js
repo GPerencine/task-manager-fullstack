@@ -1,84 +1,63 @@
-const apiUrl = "https://task-manager-fullstack-tcui.onrender.com//tasks";
-
 import { getTasks, createTask, deleteTask } from "./services/api.js";
-import { renderTask } from "./components/task.js";
 
-async function loadTasks(filter = "all") {
-    const response = await fetch(`${apiUrl}`);
-    const tasks = await response.json();
+const list = document.getElementById("taskList");
+const loading = document.getElementById("loading");
+const message = document.getElementById("message");
 
-    const list = document.getElementById("taskList");
-    list.innerHTML = "";
-
-    let filteredTasks = tasks;
-
-    if (filter === "completed") {
-        filteredTasks = tasks.filter(t => t.isCompleted);
-    }
-
-    if (filter === "pending") {
-        filteredTasks = tasks.filter(t => !t.isCompleted);
-    }
-
-    filteredTasks.forEach(task => {
-        const li = document.createElement("li");
-
-        li.innerHTML = `
-            <strong>${task.title}</strong> - ${task.description}
-            ${task.isCompleted ? "✅" : ""}
-            <button onclick="deleteTask(${task.id})">Excluir</button>
-        `;
-
-        list.appendChild(li);
-    });
-}
-
-async function createTask() {
-    const title = document.getElementById("title").value;
-    const description = document.getElementById("description").value;
-
-    const loading = document.getElementById("loading");
-    const message = document.getElementById("message");
-
+async function loadTasks() {
     loading.style.display = "block";
-    message.innerText = "";
-
     try {
-        const response = await fetch(`${apiUrl}`, {
-            method: "POST",
-            headers: {
-                "Content-Type": "application/json"
-            },
-            body: JSON.stringify({
-                title,
-                description,
-                isCompleted: false
-            })
+        const tasks = await getTasks();
+        list.innerHTML = "";
+        
+        tasks.forEach(task => {
+            const li = document.createElement("li");
+            li.innerHTML = `
+                <div class="task-content">
+                    <strong>${task.title}</strong>
+                    <span>${task.description || 'Sem descrição'}</span>
+                </div>
+                <button class="btn-delete" onclick="handleDelete(${task.id})">Excluir</button>
+            `;
+            list.appendChild(li);
         });
-
-        if (!response.ok) throw new Error("Erro ao salvar");
-
-        message.innerText = "Tarefa criada com sucesso!";
-        document.getElementById("title").value = "";
-        document.getElementById("description").value = "";
-        loadTasks();
-
     } catch (error) {
-        message.innerText = "Erro ao salvar tarefa.";
+        message.innerText = "Erro ao carregar tarefas.";
     } finally {
         loading.style.display = "none";
     }
 }
 
-async function deleteTask(id) {
-    const confirmDelete = confirm("Tem certeza que deseja deletar esta tarefa?");
-    if (!confirmDelete) return;
+async function handleSave() {
+    const title = document.getElementById("title").value;
+    const description = document.getElementById("description").value;
 
-    await fetch(`${apiUrl}/${id}`, {
-        method: "DELETE"
-    });
+    if (!title) return alert("O título é obrigatório!");
 
-    loadTasks();
+    try {
+        await createTask({ title, description, isCompleted: false });
+        message.style.color = "green";
+        message.innerText = "Tarefa adicionada!";
+        document.getElementById("title").value = "";
+        document.getElementById("description").value = "";
+        loadTasks();
+    } catch (error) {
+        message.style.color = "red";
+        message.innerText = "Erro ao salvar.";
+    }
 }
 
+window.handleDelete = async (id) => {
+    if (!confirm("Deseja excluir esta tarefa?")) return;
+    try {
+        await deleteTask(id);
+        loadTasks();
+    } catch (error) {
+        alert("Erro ao excluir.");
+    }
+};
+
+document.getElementById("btnSave").addEventListener("click", handleSave);
+
+// Inicializa
 loadTasks();

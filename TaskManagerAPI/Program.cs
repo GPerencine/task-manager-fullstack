@@ -29,13 +29,13 @@ var app = builder.Build();
 // MIDDLEWARE
 // =====================
 
+app.UseCors("AllowAll");
+
 if (app.Environment.IsDevelopment())
 {
     app.UseSwagger();
     app.UseSwaggerUI();
 }
-
-app.UseCors("AllowAll");
 
 // =====================
 // ENDPOINTS
