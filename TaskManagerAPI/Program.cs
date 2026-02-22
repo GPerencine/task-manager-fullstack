@@ -4,8 +4,12 @@ using TaskManagerAPI.Models;
 
 var builder = WebApplication.CreateBuilder(args);
 
-// Serviços
-builder.Services.AddOpenApi();
+// =====================
+// SERVICES
+// =====================
+
+builder.Services.AddEndpointsApiExplorer();
+builder.Services.AddSwaggerGen();
 
 builder.Services.AddDbContext<AppDbContext>(options =>
     options.UseSqlite("Data Source=tasks.db"));
@@ -21,14 +25,25 @@ builder.Services.AddCors(options =>
 
 var app = builder.Build();
 
+// =====================
+// MIDDLEWARE
+// =====================
+
 if (app.Environment.IsDevelopment())
 {
-    app.MapOpenApi();
+    app.UseSwagger();
+    app.UseSwaggerUI();
 }
 
 app.UseCors("AllowAll");
 
 app.UseHttpsRedirection();
+
+// =====================
+// ENDPOINTS
+// =====================
+
+app.MapGet("/", () => "API Running");
 
 app.MapGet("/tasks", async (AppDbContext db) =>
 {
@@ -72,7 +87,5 @@ app.MapDelete("/tasks/{id}", async (int id, AppDbContext db) =>
 
     return Results.NoContent();
 });
-
-app.MapGet("/", () => "API Running");
 
 app.Run();
