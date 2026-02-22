@@ -75,4 +75,7 @@ app.MapDelete("/tasks/{id}", async (int id, AppDbContext db) =>
 
 app.MapGet("/", () => "API Running");
 
+var port = Environment.GetEnvironmentVariable("PORT") ?? "8080";
+app.Urls.Add($"http://*:{port}");
+
 app.Run();
