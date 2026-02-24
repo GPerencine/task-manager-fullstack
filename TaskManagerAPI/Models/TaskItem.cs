@@ -6,4 +6,7 @@ public class TaskItem
     public string Title { get; set; } = string.Empty;
     public string Description { get; set; } = string.Empty;
     public bool IsCompleted { get; set; }
+    
+    // NOVO: Relaciona a tarefa ao ID do usuário do Supabase
+    public string UserId { get; set; } = string.Empty;
 }

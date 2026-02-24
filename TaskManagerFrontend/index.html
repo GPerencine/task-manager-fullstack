@@ -7,24 +7,38 @@
     <link rel="stylesheet" href="style.css">
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600&display=swap" rel="stylesheet">
+    <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
 </head>
 <body>
     <div class="container">
         <header>
-            <h1>Minhas Tarefas</h1>
+            <div style="display: flex; justify-content: space-between; align-items: center;">
+                <h1>Minhas Tarefas</h1>
+                <button id="btnLogout" style="background: #ff4d4d; color: white; border: none; padding: 5px 10px; border-radius: 4px; cursor: pointer; display: none;">Sair</button>
+            </div>
             <p>Gerencie seu dia com eficiência</p>
         </header>
 
-        <div class="input-group">
-            <input type="text" id="title" placeholder="O que precisa ser feito?">
-            <textarea id="description" placeholder="Adicione detalhes (opcional)"></textarea>
-            <button id="btnSave">Adicionar Tarefa</button>
+        <div id="auth-container" class="input-group">
+            <input type="email" id="email" placeholder="Seu e-mail">
+            <input type="password" id="password" placeholder="Sua senha">
+            <div style="display: flex; gap: 10px;">
+                <button id="btnLogin">Entrar</button>
+                <button id="btnSignUp" style="background-color: #666;">Cadastrar</button>
+            </div>
         </div>
 
-        <div id="loading" class="spinner" style="display:none"></div>
-        <div id="message"></div>
+        <div id="todo-container" style="display: none;">
+            <div class="input-group">
+                <input type="text" id="title" placeholder="O que precisa ser feito?">
+                <textarea id="description" placeholder="Adicione detalhes (opcional)"></textarea>
+                <button id="btnSave">Adicionar Tarefa</button>
+            </div>
 
-        <ul id="taskList"></ul>
+            <div id="loading" class="spinner" style="display:none"></div>
+            <div id="message"></div>
+            <ul id="taskList"></ul>
+        </div>
     </div>
     <script type="module" src="script.js"></script>
 </body>

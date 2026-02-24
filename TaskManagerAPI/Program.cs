@@ -11,8 +11,11 @@ var builder = WebApplication.CreateBuilder(args);
 builder.Services.AddEndpointsApiExplorer();
 builder.Services.AddSwaggerGen();
 
+// Connection String do seu Supabase (Coloque sua senha real no lugar de SUA_SENHA)
+var connectionString = "Host=db.cvdmiikzeyzcmlhgoxdv.supabase.co;Port=5432;Database=postgres;Username=postgres;Password=SUA_SENHA";
+
 builder.Services.AddDbContext<AppDbContext>(options =>
-    options.UseSqlite("Data Source=/tmp/tasks.db"));
+    options.UseNpgsql(connectionString));
 
 builder.Services.AddCors(options => 
 {
@@ -38,20 +41,15 @@ if (app.Environment.IsDevelopment())
 }
 
 // =====================
-// ENDPOINTS
+// ENDPOINTS (Individualizados)
 // =====================
 
-app.MapGet("/", () => "API Running");
+app.MapGet("/", () => "API Task Manager Conectada ao Supabase!");
 
-app.MapGet("/tasks", async (AppDbContext db) =>
+// Busca apenas tarefas do usuário logado
+app.MapGet("/tasks/{userId}", async (string userId, AppDbContext db) =>
 {
-    return await db.Tasks.ToListAsync();
-});
-
-app.MapGet("/tasks/{id}", async (int id, AppDbContext db) =>
-{
-    var task = await db.Tasks.FindAsync(id);
-    return task is not null ? Results.Ok(task) : Results.NotFound();
+    return await db.Tasks.Where(t => t.UserId == userId).ToListAsync();
 });
 
 app.MapPost("/tasks", async (TaskItem task, AppDbContext db) =>
@@ -71,7 +69,6 @@ app.MapPut("/tasks/{id}", async (int id, TaskItem inputTask, AppDbContext db) =>
     task.IsCompleted = inputTask.IsCompleted;
 
     await db.SaveChangesAsync();
-
     return Results.NoContent();
 });
 
@@ -82,10 +79,10 @@ app.MapDelete("/tasks/{id}", async (int id, AppDbContext db) =>
 
     db.Tasks.Remove(task);
     await db.SaveChangesAsync();
-
     return Results.NoContent();
 });
 
+// Criar tabela automaticamente no PostgreSQL do Supabase
 using (var scope = app.Services.CreateScope())
 {
     var db = scope.ServiceProvider.GetRequiredService<AppDbContext>();

@@ -1,24 +1,71 @@
 import { getTasks, createTask, deleteTask, updateTask } from "./services/api.js";
 
+// Configuração do Supabase (Use as chaves do seu print)
+const SUPABASE_URL = "https://cvdmiikzeyzcmlhgoxdv.supabase.co";
+const SUPABASE_KEY = "SUA_ANON_KEY_AQUI"; // Use a "anon public" do seu print
+const supabase = window.supabase.createClient(SUPABASE_URL, SUPABASE_KEY);
+
 const list = document.getElementById("taskList");
 const loading = document.getElementById("loading");
 const message = document.getElementById("message");
+const authContainer = document.getElementById("auth-container");
+const todoContainer = document.getElementById("todo-container");
+const btnLogout = document.getElementById("btnLogout");
 
+let currentUser = null;
+
+// --- CONTROLE DE SESSÃO ---
+async function checkUser() {
+    const { data } = await supabase.auth.getUser();
+    if (data?.user) {
+        currentUser = data.user;
+        authContainer.style.display = "none";
+        todoContainer.style.display = "block";
+        btnLogout.style.display = "block";
+        loadTasks();
+    } else {
+        authContainer.style.display = "block";
+        todoContainer.style.display = "none";
+        btnLogout.style.display = "none";
+    }
+}
+
+// --- LOGIN E CADASTRO ---
+document.getElementById("btnLogin").onclick = async () => {
+    const email = document.getElementById("email").value;
+    const password = document.getElementById("password").value;
+    const { error } = await supabase.auth.signInWithPassword({ email, password });
+    if (error) alert(error.message);
+    else checkUser();
+};
+
+document.getElementById("btnSignUp").onclick = async () => {
+    const email = document.getElementById("email").value;
+    const password = document.getElementById("password").value;
+    const { error } = await supabase.auth.signUp({ email, password });
+    if (error) alert("Verifique seu e-mail para confirmar o cadastro!");
+    else alert("Cadastro realizado!");
+};
+
+btnLogout.onclick = async () => {
+    await supabase.auth.signOut();
+    location.reload();
+};
+
+// --- TAREFAS ---
 async function loadTasks() {
+    if (!currentUser) return;
     loading.style.display = "block";
     try {
-        const tasks = await getTasks();
+        const tasks = await getTasks(currentUser.id); // Passa o ID do usuário
         list.innerHTML = "";
         
         tasks.forEach(task => {
             const li = document.createElement("li");
             li.className = `task-item ${task.isCompleted ? 'completed' : ''}`;
-            
             li.innerHTML = `
-                <input type="checkbox" class="task-checkbox" 
-                    ${task.isCompleted ? 'checked' : ''} 
+                <input type="checkbox" class="task-checkbox" ${task.isCompleted ? 'checked' : ''} 
                     onchange="handleToggle(${task.id}, '${task.title}', '${task.description}', this.checked)">
-                
                 <div class="task-info-wrapper">
                     <strong>${task.title}</strong>
                     <span>${task.description || 'Sem descrição'}</span>
@@ -44,16 +91,13 @@ async function handleSave() {
         await createTask({ 
             title: titleInput.value, 
             description: descInput.value, 
-            isCompleted: false 
+            isCompleted: false,
+            userId: currentUser.id // VINCULA AO USUÁRIO
         });
         
         message.style.color = "green";
         message.innerText = "Tarefa adicionada!";
-        
-        // LIMPAR MENSAGEM: Some após 3 segundos
-        setTimeout(() => {
-            message.innerText = "";
-        }, 3000);
+        setTimeout(() => message.innerText = "", 3000);
 
         titleInput.value = "";
         descInput.value = "";
@@ -64,16 +108,10 @@ async function handleSave() {
     }
 }
 
-// NOVA FUNÇÃO: Alterna entre concluída e pendente
 window.handleToggle = async (id, title, description, isChecked) => {
     try {
-        await updateTask(id, { 
-            id, 
-            title, 
-            description, 
-            isCompleted: isChecked 
-        });
-        loadTasks(); // Recarrega para aplicar os estilos de riscado
+        await updateTask(id, { id, title, description, isCompleted: isChecked, userId: currentUser.id });
+        loadTasks();
     } catch (error) {
         alert("Erro ao atualizar tarefa.");
     }
@@ -90,5 +128,4 @@ window.handleDelete = async (id) => {
 };
 
 document.getElementById("btnSave").addEventListener("click", handleSave);
-
-loadTasks();
+checkUser();

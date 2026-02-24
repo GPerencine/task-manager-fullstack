@@ -1,7 +1,8 @@
 const apiUrl = "https://task-manager-fullstack-tcui.onrender.com"; 
 
-export async function getTasks() {
-    const response = await fetch(`${apiUrl}/tasks`); 
+export async function getTasks(userId) {
+    // Agora enviamos o userId na URL para o filtro do C#
+    const response = await fetch(`${apiUrl}/tasks/${userId}`); 
     return await response.json();
 }
 
@@ -13,7 +14,6 @@ export async function createTask(task) {
     });
 }
 
-// Atualiza o status da tarefa no banco
 export async function updateTask(id, task) {
     return await fetch(`${apiUrl}/tasks/${id}`, {
         method: "PUT",
