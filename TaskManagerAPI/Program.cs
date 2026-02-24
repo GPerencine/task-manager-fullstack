@@ -90,10 +90,12 @@ app.MapDelete("/tasks/{id}", async (int id, AppDbContext db) =>
 });
 
 // Criar tabela automaticamente no PostgreSQL do Supabase
-using (var scope = app.Services.CreateScope())
-{
-    var db = scope.ServiceProvider.GetRequiredService<AppDbContext>();
-    db.Database.EnsureCreated();
+try {
+    using (var scope = app.Services.CreateScope()) {
+        var db = scope.ServiceProvider.GetRequiredService<AppDbContext>();
+        db.Database.EnsureCreated();
+    }
+} catch (Exception ex) {
+    Console.WriteLine($"Nota: O banco pode já existir ou está demorando: {ex.Message}");
 }
-
 app.Run();
