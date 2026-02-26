@@ -5,6 +5,35 @@ const SUPABASE_KEY = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZ
 const supabase = window.supabase.createClient(SUPABASE_URL, SUPABASE_KEY);
 const apiUrl = "https://task-manager-fullstack-tcui.onrender.com";
 
+// BOTAO ADICIONAR TAREFA
+window.handleSave = async () => {
+    const title = document.getElementById("title").value;
+    const desc = document.getElementById("description").value;
+    
+    const task = {
+        title: title,
+        description: desc,
+        isCompleted: false,
+        userId: currentUser.id // Pega do login do Supabase
+    };
+
+    try {
+        const res = await fetch(`${apiUrl}/tasks`, {
+            method: "POST",
+            headers: { "Content-Type": "application/json" },
+            body: JSON.stringify(task)
+        });
+        if (res.ok) {
+            document.getElementById("title").value = "";
+            loadTasks();
+        } else {
+            alert("Erro 500 no servidor C#");
+        }
+    } catch (e) {
+        alert("Servidor offline");
+    }
+};
+
 const authContainer = document.getElementById("auth-container");
 const todoContainer = document.getElementById("todo-container");
 let currentUser = null;
