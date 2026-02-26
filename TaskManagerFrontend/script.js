@@ -2,7 +2,9 @@ import { getTasks, createTask, deleteTask, updateTask } from "./services/api.js"
 
 // Configuração do Supabase
 const SUPABASE_URL = "https://cvdmiikzeyzcmlhgoxdv.supabase.co";
-const SUPABASE_KEY = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9..."; // Mantenha sua chave completa aqui
+const SUPABASE_KEY = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImN2ZG1paWt6ZXl6Y21saGdveGR2Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzE5NTA1MjMsImV4cCI6MjA4NzUyNjUyM30.G7DpFo19wH7z5D68KwQPSCMIZQo199SBhNEews-ndVs";
+
+// Inicialização
 const supabase = window.supabase.createClient(SUPABASE_URL, SUPABASE_KEY);
 
 // Elementos do DOM
