@@ -5,23 +5,15 @@ using Npgsql;
 
 var builder = WebApplication.CreateBuilder(args);
 
-// Configuração Segura da Conexão (Resolve o erro "Tenant or user not found")
-var connBuilder = new NpgsqlConnectionStringBuilder();
-connBuilder.Host = "aws-0-sa-east-1.pooler.supabase.com";
-connBuilder.Port = 6543;
-connBuilder.Database = "postgres";
-connBuilder.Username = "postgres.cvdmiikzeyzcmlhgoxdv"; // Verifique se não há espaços extras
-connBuilder.Password = "EhAA*$FPUm3uC7k"; // O builder trata os caracteres especiais automaticamente
-connBuilder.SslMode = SslMode.Require; // Alterado para Require para garantir conexão segura
-connBuilder.TrustServerCertificate = true;
+var connectionString = "Host=aws-0-sa-east-1.pooler.supabase.com;Port=6543;Database=postgres;Username=postgres.cvdmiikzeyzcmlhgoxdv;Password=EhAA*$FPUm3uC7k;SSL Mode=Require;Trust Server Certificate=true;Include Error Detail=true;options='-c target_session_attrs=read-write'";
 
 builder.Services.AddDbContext<AppDbContext>(options =>
-    options.UseNpgsql(connBuilder.ConnectionString, npgsqlOptions => 
+    options.UseNpgsql(connectionString, npgsqlOptions => 
     {
         npgsqlOptions.EnableRetryOnFailure(5, TimeSpan.FromSeconds(10), null);
     }));
 
-// Liberação de CORS (Resolve o erro "Blocked by CORS policy")
+
 builder.Services.AddCors(options => {
     options.AddPolicy("AllowAll", policy => {
         policy.AllowAnyOrigin().AllowAnyMethod().AllowAnyHeader();

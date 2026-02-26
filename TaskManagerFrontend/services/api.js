@@ -1,6 +1,5 @@
 const apiUrl = "https://task-manager-fullstack-tcui.onrender.com";
 
-
 export async function getTasks(userId) {
     // Agora enviamos o userId na URL para o filtro do C#
     const response = await fetch(`${apiUrl}/tasks/${userId}`); 

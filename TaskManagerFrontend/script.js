@@ -1,4 +1,5 @@
 import { getTasks, createTask, deleteTask, updateTask } from "./services/api.js";
+const apiUrl = "https://task-manager-fullstack-tcui.onrender.com";
 
 // Configuração do Supabase
 const SUPABASE_URL = "https://cvdmiikzeyzcmlhgoxdv.supabase.co";
