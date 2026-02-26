@@ -44,6 +44,7 @@ async function checkUser() {
 
 // --- LOGIN E CADASTRO (VIA NOME DE USUÁRIO) ---
 document.getElementById("btnLogin").onclick = async () => {
+    message.innerText = "Acordando servidor... aguarde.";
     const user = document.getElementById("username").value;
     const password = document.getElementById("password").value;
     if (!user || !password) return alert("Preencha todos os campos");
@@ -136,3 +137,6 @@ window.handleDelete = async (id) => {
 
 document.getElementById("btnSave").onclick = handleSave;
 checkUser();
+
+// Acorda o backend na Render assim que o site abre
+fetch("https://task-manager-fullstack-tcui.onrender.com/tasks").catch(() => {});
