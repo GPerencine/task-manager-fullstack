@@ -136,7 +136,11 @@ window.handleDelete = async (id) => {
 };
 
 document.getElementById("btnSave").onclick = handleSave;
-checkUser();
+
+async function init() {
+    await checkUser(); // Ele verifica se o usuário está logado antes de tentar buscar tarefas
+}
+init();
 
 // Wake-up call para a Render
 fetch("https://task-manager-fullstack-tcui.onrender.com/tasks").catch(() => {});
