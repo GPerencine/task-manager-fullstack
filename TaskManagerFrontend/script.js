@@ -1,87 +1,77 @@
-import { getTasks, createTask, deleteTask, updateTask } from "./services/api.js";
-
-const SUPABASE_URL = "https://cvdmiikzeyzcmlhgoxdv.supabase.co";
-const SUPABASE_KEY = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImN2ZG1paWt6ZXl6Y21saGdveGR2Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzE5NTA1MjMsImV4cCI6MjA4NzUyNjUyM30.G7DpFo19wH7z5D68KwQPSCMIZQo199SBhNEews-ndVs";
+// Configuração do Supabase
+const SUPABASE_URL = "https://jizivavecvnsnobzbikr.supabase.co";
+const SUPABASE_KEY = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Imppeml2YXZlY3Zuc25vYnpiaWtyIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzIxMzU0MDAsImV4cCI6MjA4NzcxMTQwMH0.wVXxXrh9733U-_gvedXDCKkcHaAMDdLnZXmlFGjkchA";
 
 const supabase = window.supabase.createClient(SUPABASE_URL, SUPABASE_KEY);
 
+// Elementos
 const list = document.getElementById("taskList");
-const message = document.getElementById("message");
 const authContainer = document.getElementById("auth-container");
 const todoContainer = document.getElementById("todo-container");
+const btnLogout = document.getElementById("btnLogout");
 let currentUser = null;
 
-// --- SESSÃO ---
+// --- CONTROLE DE SESSÃO ---
 async function checkUser() {
-    const { data } = await supabase.auth.getUser();
-    if (data?.user) {
-        currentUser = data.user;
+    const { data: { user } } = await supabase.auth.getUser();
+    if (user) {
+        currentUser = user;
         authContainer.style.display = "none";
         todoContainer.style.display = "block";
-        loadTasks(); // Só carrega se estiver logado
+        btnLogout.style.display = "block";
+        loadTasks();
     } else {
+        currentUser = null;
         authContainer.style.display = "block";
         todoContainer.style.display = "none";
+        btnLogout.style.display = "none";
     }
 }
 
-// --- TAREFAS ---
+// --- GESTÃO DE TAREFAS (DIRETO NO SUPABASE) ---
 async function loadTasks() {
     if (!currentUser) return;
-    try {
-        const tasks = await getTasks(currentUser.id);
-        list.innerHTML = tasks.map(task => `
-            <li class="task-item ${task.isCompleted ? 'completed' : ''}">
-                <input type="checkbox" ${task.isCompleted ? 'checked' : ''} 
-                    onchange="window.handleToggle(${task.id}, '${task.title}', '${task.description || ''}', this.checked)">
-                <div class="task-info-wrapper">
-                    <strong>${task.title}</strong>
-                    <span>${task.description || ''}</span>
-                </div>
-                <button onclick="window.handleDelete(${task.id})">Excluir</button>
-            </li>
-        `).join('');
-        message.innerText = "";
-    } catch (e) { message.innerText = "Servidor acordando..."; }
+    // Busca na tabela "Tasks" do Supabase
+    const { data, error } = await supabase
+        .from('Tasks')
+        .select('*')
+        .eq('UserId', currentUser.id)
+        .order('Id', { ascending: true });
+
+    if (error) return console.error(error);
+
+    list.innerHTML = data.map(task => `
+        <li class="task-item ${task.IsCompleted ? 'completed' : ''}">
+            <input type="checkbox" ${task.IsCompleted ? 'checked' : ''} 
+                onchange="handleToggle(${task.Id}, this.checked)">
+            <div class="task-info-wrapper">
+                <strong>${task.Title}</strong>
+                <span>${task.Description || ''}</span>
+            </div>
+            <button class="btn-delete" onclick="handleDelete(${task.Id})">Excluir</button>
+        </li>
+    `).join('');
 }
 
 window.handleSave = async () => {
     const title = document.getElementById("title").value;
     const desc = document.getElementById("description").value;
     if (!title) return;
-    try {
-        await createTask({ title, description: desc, isCompleted: false, userId: currentUser.id });
+
+    const { error } = await supabase
+        .from('Tasks')
+        .insert([{ Title: title, Description: desc, IsCompleted: false, UserId: currentUser.id }]);
+
+    if (!error) {
         document.getElementById("title").value = "";
         document.getElementById("description").value = "";
         loadTasks();
-    } catch (e) { message.innerText = "Erro ao salvar."; }
+    }
 };
 
-window.handleToggle = async (id, title, description, isCompleted) => {
-    await updateTask(id, { id, title, description, isCompleted, userId: currentUser.id });
+window.handleToggle = async (id, isCompleted) => {
+    await supabase.from('Tasks').update({ IsCompleted: isCompleted }).eq('Id', id);
     loadTasks();
 };
 
-window.handleDelete = async (id) => {
-    if (confirm("Excluir?")) { await deleteTask(id); loadTasks(); }
-};
-
-// --- AUTH ---
-document.getElementById("btnLogin").onclick = async () => {
-    const user = document.getElementById("username").value;
-    const pass = document.getElementById("password").value;
-    const { error } = await supabase.auth.signInWithPassword({ email: `${user}@task.com`, password: pass });
-    if (error) alert("Erro no login"); else checkUser();
-};
-
-document.getElementById("btnSignUp").onclick = async () => {
-    const user = document.getElementById("username").value;
-    const pass = document.getElementById("password").value;
-    const { error } = await supabase.auth.signUp({ email: `${user}@task.com`, password: pass });
-    if (error) alert(error.message); else alert("Cadastrado! Faça login.");
-};
-
-document.getElementById("btnLogout").onclick = async () => { await supabase.auth.signOut(); location.reload(); };
-document.getElementById("btnSave").onclick = window.handleSave;
-
-checkUser();
+window.handleDelete = async (id)
