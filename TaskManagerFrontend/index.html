@@ -1,30 +1,30 @@
 <!DOCTYPE html>
-<html lang="pt-br">
+<html lang="pt-br" data-theme="light">
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Task Manager Pro</title>
     <link rel="stylesheet" href="style.css">
-    <link rel="preconnect" href="https://fonts.googleapis.com">
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600&display=swap" rel="stylesheet">
     <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
 </head>
 <body>
+    <button id="btnTheme" class="btn-theme">🌓</button>
     <div class="container">
         <header>
             <div style="display: flex; justify-content: space-between; align-items: center;">
                 <h1>Minhas Tarefas</h1>
-                <button id="btnLogout" style="background: #ff4d4d; color: white; border: none; padding: 5px 10px; border-radius: 4px; cursor: pointer; display: none;">Sair</button>
+                <button id="btnLogout">Sair</button>
             </div>
             <p>Gerencie seu dia com eficiência</p>
         </header>
 
         <div id="auth-container" class="input-group">
-            <input type="email" id="email" placeholder="Seu e-mail">
+            <input type="text" id="username" placeholder="Nome de usuário">
             <input type="password" id="password" placeholder="Sua senha">
             <div style="display: flex; gap: 10px;">
                 <button id="btnLogin">Entrar</button>
-                <button id="btnSignUp" style="background-color: #666;">Cadastrar</button>
+                <button id="btnSignUp" class="btn-secondary">Cadastrar</button>
             </div>
         </div>
 
@@ -34,8 +34,6 @@
                 <textarea id="description" placeholder="Adicione detalhes (opcional)"></textarea>
                 <button id="btnSave">Adicionar Tarefa</button>
             </div>
-
-            <div id="loading" class="spinner" style="display:none"></div>
             <div id="message"></div>
             <ul id="taskList"></ul>
         </div>
