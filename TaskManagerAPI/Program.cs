@@ -4,13 +4,12 @@ using TaskManagerAPI.Models;
 
 var builder = WebApplication.CreateBuilder(args);
 
-// CONFIGURAÇÃO DEFINITIVA DA CONEXÃO (Porta 5432 é mais estável que a 6543)
-var connectionString = "Host=aws-0-sa-east-1.pooler.supabase.com;Port=5432;Database=postgres;Username=postgres.cvdmiikzeyzcmlhgoxdv;Password=EhAA*$FPUm3uC7k;SSL Mode=Require;Trust Server Certificate=true;";
+var connectionString = "Host=db.cvdmiikzeyzcmlhgoxdv.supabase.co;Port=5432;Database=postgres;Username=postgres;Password=EhAA*$FPUm3uC7k;SSL Mode=Require;Trust Server Certificate=true;";
 
 builder.Services.AddDbContext<AppDbContext>(options =>
     options.UseNpgsql(connectionString));
 
-// LIBERAÇÃO TOTAL DE CORS
+
 builder.Services.AddCors(options => {
     options.AddPolicy("AllowAll", policy => {
         policy.AllowAnyOrigin().AllowAnyMethod().AllowAnyHeader();
