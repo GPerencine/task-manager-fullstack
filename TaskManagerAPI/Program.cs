@@ -5,17 +5,14 @@ using Npgsql;
 
 var builder = WebApplication.CreateBuilder(args);
 
-builder.Services.AddEndpointsApiExplorer();
-builder.Services.AddSwaggerGen();
-
-// CONSTRUÇÃO SEGURA DA CONEXÃO
+// Configuração Segura da Conexão (Resolve o erro "Tenant or user not found")
 var connBuilder = new NpgsqlConnectionStringBuilder();
 connBuilder.Host = "aws-0-sa-east-1.pooler.supabase.com";
 connBuilder.Port = 6543;
 connBuilder.Database = "postgres";
-connBuilder.Username = "postgres.cvdmiikzeyzcmlhgoxdv";
-connBuilder.Password = "EhAA*$FPUm3uC7k"; // O builder cuida dos caracteres especiais sozinho
-connBuilder.SslMode = SslMode.Prefer;
+connBuilder.Username = "postgres.cvdmiikzeyzcmlhgoxdv"; // Verifique se não há espaços extras
+connBuilder.Password = "EhAA*$FPUm3uC7k"; // O builder trata os caracteres especiais automaticamente
+connBuilder.SslMode = SslMode.Require; // Alterado para Require para garantir conexão segura
 connBuilder.TrustServerCertificate = true;
 
 builder.Services.AddDbContext<AppDbContext>(options =>
@@ -24,6 +21,7 @@ builder.Services.AddDbContext<AppDbContext>(options =>
         npgsqlOptions.EnableRetryOnFailure(5, TimeSpan.FromSeconds(10), null);
     }));
 
+// Liberação de CORS (Resolve o erro "Blocked by CORS policy")
 builder.Services.AddCors(options => {
     options.AddPolicy("AllowAll", policy => {
         policy.AllowAnyOrigin().AllowAnyMethod().AllowAnyHeader();
@@ -36,14 +34,8 @@ var app = builder.Build();
 
 app.UseCors("AllowAll");
 
-if (app.Environment.IsDevelopment())
-{
-    app.UseSwagger();
-    app.UseSwaggerUI();
-}
-
-// ENDPOINTS
-app.MapGet("/", () => "API Ativa!");
+// Endpoints da API
+app.MapGet("/", () => "API Ativa e Conectada!");
 
 app.MapGet("/tasks/{userId}", async (string userId, AppDbContext db) =>
     await db.Tasks.Where(t => t.UserId == userId).ToListAsync());
@@ -75,14 +67,14 @@ app.MapDelete("/tasks/{id}", async (int id, AppDbContext db) =>
     return Results.NoContent();
 });
 
-// CRIAÇÃO DA TABELA (COM TRATAMENTO DE ERRO)
+// Inicialização segura do banco de dados (Evita erro 500 ao salvar)
 try {
     using (var scope = app.Services.CreateScope()) {
         var db = scope.ServiceProvider.GetRequiredService<AppDbContext>();
-        db.Database.EnsureCreated();
+        // NÃO usamos EnsureCreated aqui se a tabela foi feita manualmente via SQL Editor
     }
 } catch (Exception ex) {
-    Console.WriteLine($"Erro ao iniciar banco: {ex.Message}");
+    Console.WriteLine($"Erro de inicialização: {ex.Message}");
 }
 
 app.Run();
