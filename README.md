@@ -1,43 +1,40 @@
-# 🗂️ Task Manager - Full Stack
+# 🗂️ Task Manager Pro - Full Stack
 
-Aplicação robusta de gerenciamento de tarefas que utiliza o poder do **.NET 8** no backend e a leveza do **JavaScript Vanilla** no frontend. 
-
-O projeto demonstra a implementação de um CRUD completo, comunicação assíncrona entre domínios diferentes (CORS) e deploy containerizado.
+Uma aplicação de gerenciamento de tarefas de alta performance, construída com **.NET 8** no backend e uma interface **Vanilla** otimizada. O projeto centraliza autenticação e dados no **Neon PostgreSQL**, oferecendo uma experiência de usuário fluida e instantânea.
 
 ---
 
 ## 🚀 Demonstração
 
-- **Frontend (Vercel):** https://task-manager-fullstack-nu-neon.vercel.app/
-- **Backend (Render):** https://task-manager-fullstack-tcui.onrender.com/tasks
+- **Deploy feitoo com Vercel:** https://task-manager-fullstack-nu-neon.vercel.app/
 
 ---
 
 ## 🛠️ Tecnologias e Ferramentas
 
 ### **Backend**
-* **C# / .NET 8:** Minimal APIs para alta performance.
-* **Entity Framework Core:** ORM para manipulação do banco de dados.
-* **SQLite:** Banco de dados relacional leve.
-* **Swagger:** Documentação automática da API.
-* **Docker:** Containerização para garantir consistência entre ambientes.
+* **C# / .NET 8 (Minimal APIs):** Estrutura leve e de alta performance.
+* **Entity Framework Core:** ORM para abstração e manipulação de dados.
+* **PostgreSQL (Neon.tech):** Banco de dados relacional com Serverless storage e Connection Pooling.
+* **Docker:** Containerização completa para deploy do Back End de forma escalável.
 
 ### **Frontend**
-* **JavaScript (ES6+):** Manipulação de DOM e consumo de API (Fetch).
-* **HTML5 / CSS3:** Interface responsiva com foco em UX moderna (Design Clean).
+* **JavaScript (ES6+):** Implementação de **Atualização Otimista (Optimistic UI)** para respostas instantâneas.
+* **HTML5 / CSS3:** Design moderno com suporte nativo a **Dark Mode**.
+* **Fetch API:** Comunicação assíncrona robusta com tratamento de erros.
 
 ---
 
-## 🧠 Arquitetura e Soluções Técnicas
+## 🧠 Diferenciais Técnicos
 
-### **Comunicação Cross-Origin (CORS)**
-Implementada política de CORS no middleware do ASP.NET para permitir que o frontend hospedado na Vercel consumisse os recursos da API no Render de forma segura.
+### **Arquitetura Unificada (Neon + C#)**
+Diferente de implementações híbridas, este projeto centraliza a **Autenticação de Usuários** e a **Gestão de Tarefas** em um único banco de dados PostgreSQL (Neon). Isso reduz a latência e simplifica a manutenção do sistema.
 
-### **Persistência de Dados**
-Uso do SQLite em ambiente de container no Render, utilizando o diretório `/tmp` para persistência temporária do arquivo `.db`.
+### **Optimistic UI (Interface Instantânea)**
+O frontend foi projetado para atualizar a interface antes mesmo da confirmação do servidor. Se uma tarefa é marcada como concluída ou excluída, a mudança é imediata para o usuário, enquanto a sincronização com o banco ocorre em segundo plano.
 
-### **Interface Reativa**
-O frontend foi estruturado como um módulo JavaScript, garantindo que as funções de criação, deleção e alteração de status (`isCompleted`) reflitam instantaneamente na UI e no banco de dados.
+### **Persistência Serverless**
+Utiliza o Neon para garantir que os dados sejam persistidos de forma segura e escalável, superando as limitações de bancos de dados locais (como SQLite) em ambientes de deploy efêmeros como o Render.
 
 ---
 
@@ -45,7 +42,9 @@ O frontend foi estruturado como um módulo JavaScript, garantindo que as funçõ
 
 | Método | Endpoint | Descrição |
 | :--- | :--- | :--- |
-| `GET` | `/tasks` | Lista todas as tarefas |
-| `POST` | `/tasks` | Cria uma nova tarefa |
-| `PUT` | `/tasks/{id}` | Atualiza status (concluído/pendente) |
-| `DELETE` | `/tasks/{id}` | Remove uma tarefa |
+| `POST` | `/register` | Cadastra um novo usuário |
+| `POST` | `/login` | Autentica usuário e retorna ID |
+| `GET` | `/tasks/{userId}` | Lista tarefas de um usuário específico |
+| `POST` | `/tasks` | Cria uma nova tarefa vinculada ao usuário |
+| `PUT` | `/tasks/{id}` | Alterna o status de conclusão |
+| `DELETE` | `/tasks/{id}` | Remove permanentemente uma tarefa |
