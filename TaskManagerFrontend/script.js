@@ -96,11 +96,32 @@ async function loadTasks() {
 function renderTasks(tasks) {
     const list = document.getElementById("taskList");
     list.innerHTML = tasks.map(t => `
-        <li class="task-item ${t.isCompleted ? 'completed' : ''}">
-            <strong>${t.title}</strong>
-            <p>${t.description || ''}</p>
+        <li class="task-item ${t.isCompleted ? 'completed' : ''}" onclick="toggleTask(${t.id}, ${t.isCompleted})">
+            <div style="cursor: pointer;">
+                <strong>${t.isCompleted ? '✅' : '⭕'} ${t.title}</strong>
+                <p>${t.description || ''}</p>
+            </div>
         </li>
     `).join('');
+}
+
+// NOVA FUNÇÃO PARA CONCLUIR
+async function toggleTask(id, currentStatus) {
+    try {
+        const res = await fetch(`${apiUrl}/tasks/${id}`, {
+            method: "PUT",
+            headers: { "Content-Type": "application/json" },
+            body: JSON.stringify({ 
+                isCompleted: !currentStatus // Inverte o status
+            })
+        });
+        
+        if (res.ok) {
+            loadTasks(); // Recarrega a lista atualizada
+        }
+    } catch (e) {
+        alert("Erro ao atualizar tarefa no servidor");
+    }
 }
 
 checkUser();
