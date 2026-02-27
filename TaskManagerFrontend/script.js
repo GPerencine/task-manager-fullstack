@@ -27,20 +27,29 @@ document.getElementById("btnLogin").onclick = async () => {
             currentUser = await res.json();
             document.getElementById("auth-container").style.display = "none";
             document.getElementById("todo-container").style.display = "block";
+            document.getElementById("btnLogout").style.display = "block"; // MOSTRAR BOTÃO SAIR
             loadTasks();
-        } else alert("Erro no login");
-    } finally { btn.innerText = "Entrar"; }
+        } else alert("Usuário ou senha incorretos.");
+    } catch (e) { alert("Erro ao conectar ao servidor."); }
+    finally { btn.innerText = "Entrar"; }
 };
 
 document.getElementById("btnSignUp").onclick = async () => {
     const user = document.getElementById("username").value;
     const pass = document.getElementById("password").value;
-    await fetch(`${apiUrl}/register`, {
+    const res = await fetch(`${apiUrl}/register`, {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({ username: user, password: pass })
     });
-    alert("Cadastrado!");
+    if (res.ok) alert("Cadastrado! Agora clique em Entrar.");
+    else alert("Erro ao cadastrar.");
+};
+
+// BOTAO SAIR (LOGOUT)
+document.getElementById("btnLogout").onclick = () => {
+    currentUser = null;
+    location.reload(); // Recarrega para limpar estado e voltar ao login
 };
 
 // --- TAREFAS ---
@@ -84,7 +93,6 @@ document.getElementById("btnSave").onclick = async () => {
         userId: currentUser.id 
     };
 
-    // UI Instantânea
     tasksLocal.push(newTask);
     renderTasks([...tasksLocal]);
 
@@ -98,7 +106,7 @@ document.getElementById("btnSave").onclick = async () => {
         body: JSON.stringify({ title: t, description: d, isCompleted: false, userId: currentUser.id })
     });
 
-    if (res.ok) await loadTasks(); // Sincroniza ID real do Neon
+    if (res.ok) await loadTasks();
 };
 
 window.toggleTask = async (id) => {
@@ -116,14 +124,10 @@ window.toggleTask = async (id) => {
 };
 
 window.deleteTask = async (id) => {
-    // Restaurada a confirmação
-    if (!confirm("Tem certeza que deseja excluir esta tarefa?")) return;
+    if (!confirm("Deseja excluir esta tarefa?")) return;
 
-    // UI Instantânea
     tasksLocal = tasksLocal.filter(t => t.id !== id);
     renderTasks([...tasksLocal]);
 
     await fetch(`${apiUrl}/tasks/${id}`, { method: "DELETE" });
 };
-
-document.getElementById("btnLogout").onclick = () => location.reload();
