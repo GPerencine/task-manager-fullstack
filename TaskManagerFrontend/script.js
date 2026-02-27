@@ -93,35 +93,46 @@ async function loadTasks() {
     } catch (e) { console.error("Erro ao carregar"); }
 }
 
+// Renderiza as tarefas com botões de Check e Excluir
 function renderTasks(tasks) {
     const list = document.getElementById("taskList");
     list.innerHTML = tasks.map(t => `
-        <li class="task-item ${t.isCompleted ? 'completed' : ''}" onclick="toggleTask(${t.id}, ${t.isCompleted})">
-            <div style="cursor: pointer;">
-                <strong>${t.isCompleted ? '✅' : '⭕'} ${t.title}</strong>
-                <p>${t.description || ''}</p>
+        <li class="task-item ${t.isCompleted ? 'completed' : ''}">
+            <div style="display: flex; align-items: center; gap: 10px; flex: 1;">
+                <span onclick="toggleTask(${t.id}, ${t.isCompleted})" style="cursor: pointer; font-size: 1.2rem;">
+                    ${t.isCompleted ? '✅' : '⭕'}
+                </span>
+                <div>
+                    <strong>${t.title}</strong>
+                    <p style="margin: 0; font-size: 0.9rem; color: var(--text-sub);">${t.description || ''}</p>
+                </div>
             </div>
+            <button onclick="deleteTask(${t.id})" style="background: var(--danger); padding: 5px 10px; font-size: 0.8rem;">
+                Excluir
+            </button>
         </li>
     `).join('');
 }
 
-// NOVA FUNÇÃO PARA CONCLUIR
+// Função para Alternar Concluído (PUT)
 async function toggleTask(id, currentStatus) {
     try {
         const res = await fetch(`${apiUrl}/tasks/${id}`, {
             method: "PUT",
             headers: { "Content-Type": "application/json" },
-            body: JSON.stringify({ 
-                isCompleted: !currentStatus // Inverte o status
-            })
+            body: JSON.stringify({ isCompleted: !currentStatus })
         });
-        
-        if (res.ok) {
-            loadTasks(); // Recarrega a lista atualizada
-        }
-    } catch (e) {
-        alert("Erro ao atualizar tarefa no servidor");
-    }
+        if (res.ok) loadTasks();
+    } catch (e) { alert("Erro ao atualizar tarefa"); }
+}
+
+// Função para Excluir (DELETE)
+async function deleteTask(id) {
+    if (!confirm("Deseja excluir esta tarefa?")) return;
+    try {
+        const res = await fetch(`${apiUrl}/tasks/${id}`, { method: "DELETE" });
+        if (res.ok) loadTasks();
+    } catch (e) { alert("Erro ao excluir tarefa"); }
 }
 
 checkUser();
