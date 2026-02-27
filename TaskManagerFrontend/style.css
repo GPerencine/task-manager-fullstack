@@ -84,36 +84,64 @@ input, textarea {
     padding: 1.1rem; border-radius: 16px; font-weight: 700; cursor: pointer;
 }
 
-/* LISTA DE TAREFAS (Correção de Visibilidade do Excluir) */
 .task-item {
-    background: var(--card);
+    background: var(--card); 
     border: 1px solid var(--border);
-    padding: 1.2rem;
-    border-radius: 20px;
+    padding: 1.2rem; 
+    border-radius: 20px; 
     margin-bottom: 1rem;
-    display: flex;
-    align-items: center;
-    justify-content: space-between; /* Garante que o botão fique na direita */
+    display: flex; 
+    align-items: center; 
+    justify-content: space-between;
     gap: 10px;
+    
+    /* --- EFEITO DE RESSALTO --- */
+    transition: all 0.3s cubic-bezier(0.25, 0.8, 0.25, 1);
+    cursor: default;
+}
+
+.task-item:hover {
+    transform: translateY(-4px) scale(1.02); /* Sobe e cresce levemente */
+    box-shadow: 0 12px 20px rgba(99, 102, 241, 0.1); /* Sombra suave roxa */
+    border-color: var(--primary); /* Borda brilha no roxo */
 }
 
 .task-content {
     display: flex;
     align-items: center;
     gap: 15px;
-    flex: 1; /* Ocupa o espaço restante */
+    flex: 1;
 }
+
+/* Ajuste de Contraste para o Título */
+.task-item strong {
+    display: block;
+    font-size: 1rem;
+    color: var(--text-body); /* Adaptável ao Dark Mode */
+    transition: color 0.3s;
+}
+
+.task-item.completed strong {
+    text-decoration: line-through;
+    opacity: 0.4;
+}
+
 
 .btn-danger { 
     background: var(--danger-bg) !important; 
     color: var(--danger-text) !important; 
     border: none;
-    padding: 10px 16px; /* Aumentado para melhor clique */
+    padding: 10px 18px; 
     border-radius: 12px;
     font-weight: 700;
     font-size: 0.8rem;
     cursor: pointer;
-    flex-shrink: 0; /* Impede o botão de espremer */
+    flex-shrink: 0;
     transition: 0.2s;
 }
-.btn-danger:hover { background: var(--danger-text) !important; color: white !important; }
+
+.btn-danger:hover {
+    background: var(--danger-text) !important;
+    color: white !important;
+    transform: scale(1.05);
+}
