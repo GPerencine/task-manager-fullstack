@@ -65,25 +65,48 @@ document.getElementById("btnSave").onclick = async () => {
     const descInp = document.getElementById("description");
     if (!titleInp.value) return;
 
+    // Criamos o objeto da tarefa
     const newTask = { 
-        id: Date.now(), // ID temporário para o clique instantâneo
+        id: Date.now(), // ID temporário para a interface
         title: titleInp.value, 
         description: descInp.value, 
         isCompleted: false, 
         userId: currentUser.id 
     };
 
-    // 1. Atualiza a tela na hora
-    renderTasks([...tasksLocal, newTask]);
-    titleInp.value = ""; descInp.value = "";
+    // 1. Adiciona instantaneamente ao cache local e renderiza
+    tasksLocal.push(newTask);
+    renderTasks([...tasksLocal]);
 
-    // 2. Faz o envio real em segundo plano
-    await fetch(`${apiUrl}/tasks`, {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify(newTask)
-    });
-    loadTasks(); // Sincroniza com o ID real do banco
+    // Limpa os campos imediatamente
+    const tValue = titleInp.value;
+    const dValue = descInp.value;
+    titleInp.value = ""; 
+    descInp.value = "";
+
+    try {
+        // 2. Envia para o servidor
+        const res = await fetch(`${apiUrl}/tasks`, {
+            method: "POST",
+            headers: { "Content-Type": "application/json" },
+            body: JSON.stringify({
+                title: tValue,
+                description: dValue,
+                isCompleted: false,
+                userId: currentUser.id
+            })
+        });
+
+        if (res.ok) {
+            // 3. Só recarrega do banco APÓS o servidor confirmar o sucesso
+            await loadTasks(); 
+        }
+    } catch (e) {
+        // Se der erro, removemos a tarefa "falsa" e avisamos
+        tasksLocal = tasksLocal.filter(t => t.id !== newTask.id);
+        renderTasks(tasksLocal);
+        alert("Erro ao salvar no servidor.");
+    }
 };
 
 window.toggleTask = async (id) => {
