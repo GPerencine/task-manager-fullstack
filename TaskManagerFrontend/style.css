@@ -49,7 +49,6 @@ input, textarea {
     border: 1px solid var(--border); border-radius: 8px; 
     background: var(--card); color: var(--text-main); box-sizing: border-box;
     resize: none;
-    height: 100px;
 }
 
 button { 
@@ -65,7 +64,7 @@ button:hover { opacity: 0.9; }
 .task-item {
     background: var(--card); border: 1px solid var(--border);
     padding: 1rem; border-radius: 12px; margin-bottom: 0.75rem;
-    display: flex; align-items: center; gap: 1rem;
+    display: flex; align-items: center; gap: 1rem; resize: none;
 }
 
 .task-item.completed strong { text-decoration: line-through; color: var(--text-sub); }
