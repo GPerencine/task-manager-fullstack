@@ -1,4 +1,4 @@
-using Microsoft.AspNetCore.Mvc; // Resolve o erro vermelho do FromBody
+using Microsoft.AspNetCore.Mvc; 
 using Microsoft.EntityFrameworkCore;
 using TaskManagerAPI.Data; 
 using TaskManagerAPI.Models;
@@ -34,6 +34,26 @@ app.MapPost("/tasks", async ([FromBody] TaskItem task, AppDbContext db) => {
     db.Tasks.Add(task);
     await db.SaveChangesAsync();
     return Results.Created($"/tasks/{task.Id}", task);
+});
+
+// ROTA PARA ATUALIZAR (PUT)
+app.MapPut("/tasks/{id}", async (int id, [FromBody] TaskItem inputTask, AppDbContext db) => {
+    var task = await db.Tasks.FindAsync(id);
+    if (task is null) return Results.NotFound();
+    
+    task.IsCompleted = inputTask.IsCompleted; // Atualiza o status
+    await db.SaveChangesAsync();
+    return Results.NoContent();
+});
+
+// ROTA PARA EXCLUIR (DELETE)
+app.MapDelete("/tasks/{id}", async (int id, AppDbContext db) => {
+    var task = await db.Tasks.FindAsync(id);
+    if (task is null) return Results.NotFound();
+    
+    db.Tasks.Remove(task);
+    await db.SaveChangesAsync();
+    return Results.NoContent();
 });
 
 app.Run();
