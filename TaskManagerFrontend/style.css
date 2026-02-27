@@ -18,9 +18,16 @@
     --border: #374151;
 }
 
-body { background-color: var(--bg); color: var(--text-main); transition: 0.3s; }
-.container { background-color: var(--card); border: 1px solid var(--border); }
-input, textarea { background: var(--bg); color: var(--text-main); border: 1px solid var(--border); resize: none; }
+body { 
+    background-color: var(--bg); 
+    color: var(--text-main); 
+    font-family: 'Inter', sans-serif; 
+    margin: 0; 
+    display: flex; 
+    justify-content: center; 
+    padding: 2rem 1rem;
+    transition: background 0.3s, color 0.3s;
+}
 
 .container { 
     width: 100%;
