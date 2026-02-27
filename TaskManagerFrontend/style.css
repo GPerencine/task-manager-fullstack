@@ -76,7 +76,7 @@ body {
 input, textarea { 
     width: 100%; padding: 1rem; margin-bottom: 1rem;
     border: 1px solid var(--border); border-radius: 14px; 
-    background: var(--bg); color: var(--text-body); box-sizing: border-box;
+    background: var(--bg); color: var(--text-body); box-sizing: border-box; resize: none;
 }
 
 #btnSave, #btnLogin, #btnSignUp { 

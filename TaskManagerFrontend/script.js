@@ -12,26 +12,31 @@ document.getElementById("btnTheme").onclick = () => {
 
 // --- AUTH ---
 document.getElementById("btnLogin").onclick = async () => {
+    // 1. Pega os dados
     const user = document.getElementById("username").value;
     const pass = document.getElementById("password").value;
-    const btn = document.getElementById("btnLogin");
     
-    btn.innerText = "Entrando...";
+    // 2. Transição visual INSTANTÂNEA
+    document.getElementById("auth-container").style.display = "none";
+    document.getElementById("todo-container").style.display = "block";
+    document.getElementById("btnLogout").style.display = "block";
+
     try {
         const res = await fetch(`${apiUrl}/login`, {
             method: "POST",
             headers: { "Content-Type": "application/json" },
             body: JSON.stringify({ username: user, password: pass })
         });
+
         if (res.ok) {
             currentUser = await res.json();
-            document.getElementById("auth-container").style.display = "none";
-            document.getElementById("todo-container").style.display = "block";
-            document.getElementById("btnLogout").style.display = "block"; // MOSTRAR BOTÃO SAIR
-            loadTasks();
-        } else alert("Usuário ou senha incorretos.");
-    } catch (e) { alert("Erro ao conectar ao servidor."); }
-    finally { btn.innerText = "Entrar"; }
+            loadTasks(); // Carrega as tarefas após o login confirmado
+        } else {
+            // Se falhar, volta para o login
+            location.reload();
+            alert("Login falhou.");
+        }
+    } catch (e) { location.reload(); }
 };
 
 document.getElementById("btnSignUp").onclick = async () => {
