@@ -1,28 +1,8 @@
 const apiUrl = "https://task-manager-fullstack-tcui.onrender.com";
 let currentUser = null;
-let tasksLocal = []; // Cache local para rapidez total
+let tasksLocal = [];
 
-// --- AUXILIARES ---
-function renderTasks(tasks) {
-    tasksLocal = tasks; 
-    const list = document.getElementById("taskList");
-    list.innerHTML = tasks.map(t => `
-        <li class="task-item ${t.isCompleted ? 'completed' : ''}" id="task-${t.id}">
-            <div style="display: flex; align-items: center; gap: 10px; flex: 1;">
-                <span onclick="toggleTask(${t.id})" style="cursor: pointer; font-size: 1.2rem;">
-                    ${t.isCompleted ? '✅' : '⭕'}
-                </span>
-                <div>
-                    <strong>${t.title}</strong>
-                    <p style="margin: 0; font-size: 0.8rem; color: var(--text-sub);">${t.description || ''}</p>
-                </div>
-            </div>
-            <button onclick="deleteTask(${t.id})" class="btn-danger">Excluir</button>
-        </li>
-    `).join('');
-}
-
-// --- TEMA (Instantâneo) ---
+// --- TEMA ---
 document.getElementById("btnTheme").onclick = () => {
     const html = document.documentElement;
     const isDark = html.getAttribute("data-theme") === "dark";
@@ -36,7 +16,7 @@ document.getElementById("btnLogin").onclick = async () => {
     const pass = document.getElementById("password").value;
     const btn = document.getElementById("btnLogin");
     
-    btn.innerText = "Entrando..."; // Feedback visual rápido
+    btn.innerText = "Entrando...";
     try {
         const res = await fetch(`${apiUrl}/login`, {
             method: "POST",
@@ -52,87 +32,6 @@ document.getElementById("btnLogin").onclick = async () => {
     } finally { btn.innerText = "Entrar"; }
 };
 
-async function loadTasks() {
-    const res = await fetch(`${apiUrl}/tasks/${currentUser.id}`);
-    const tasks = await res.json();
-    renderTasks(tasks);
-}
-
-// --- AÇÕES OTIMISTAS (RESPOSTA INSTANTÂNEA) ---
-
-document.getElementById("btnSave").onclick = async () => {
-    const titleInp = document.getElementById("title");
-    const descInp = document.getElementById("description");
-    if (!titleInp.value) return;
-
-    // Criamos o objeto da tarefa
-    const newTask = { 
-        id: Date.now(), // ID temporário para a interface
-        title: titleInp.value, 
-        description: descInp.value, 
-        isCompleted: false, 
-        userId: currentUser.id 
-    };
-
-    // 1. Adiciona instantaneamente ao cache local e renderiza
-    tasksLocal.push(newTask);
-    renderTasks([...tasksLocal]);
-
-    // Limpa os campos imediatamente
-    const tValue = titleInp.value;
-    const dValue = descInp.value;
-    titleInp.value = ""; 
-    descInp.value = "";
-
-    try {
-        // 2. Envia para o servidor
-        const res = await fetch(`${apiUrl}/tasks`, {
-            method: "POST",
-            headers: { "Content-Type": "application/json" },
-            body: JSON.stringify({
-                title: tValue,
-                description: dValue,
-                isCompleted: false,
-                userId: currentUser.id
-            })
-        });
-
-        if (res.ok) {
-            // 3. Só recarrega do banco APÓS o servidor confirmar o sucesso
-            await loadTasks(); 
-        }
-    } catch (e) {
-        // Se der erro, removemos a tarefa "falsa" e avisamos
-        tasksLocal = tasksLocal.filter(t => t.id !== newTask.id);
-        renderTasks(tasksLocal);
-        alert("Erro ao salvar no servidor.");
-    }
-};
-
-window.toggleTask = async (id) => {
-    const task = tasksLocal.find(t => t.id === id);
-    if (!task) return;
-
-    // 1. Inverte na tela na hora
-    task.isCompleted = !task.isCompleted;
-    renderTasks(tasksLocal);
-
-    // 2. Avisa o banco em segundo plano
-    await fetch(`${apiUrl}/tasks/${id}`, {
-        method: "PUT",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ isCompleted: task.isCompleted })
-    });
-};
-
-window.deleteTask = async (id) => {
-    // 1. Remove da tela na hora
-    renderTasks(tasksLocal.filter(t => t.id !== id));
-
-    // 2. Remove do banco
-    await fetch(`${apiUrl}/tasks/${id}`, { method: "DELETE" });
-};
-
 document.getElementById("btnSignUp").onclick = async () => {
     const user = document.getElementById("username").value;
     const pass = document.getElementById("password").value;
@@ -143,3 +42,88 @@ document.getElementById("btnSignUp").onclick = async () => {
     });
     alert("Cadastrado!");
 };
+
+// --- TAREFAS ---
+async function loadTasks() {
+    if (!currentUser) return;
+    try {
+        const res = await fetch(`${apiUrl}/tasks/${currentUser.id}`);
+        tasksLocal = await res.json();
+        renderTasks(tasksLocal);
+    } catch (e) { console.error("Erro ao carregar"); }
+}
+
+function renderTasks(tasks) {
+    const list = document.getElementById("taskList");
+    list.innerHTML = tasks.map(t => `
+        <li class="task-item ${t.isCompleted ? 'completed' : ''}">
+            <div style="display: flex; align-items: center; gap: 10px; flex: 1;">
+                <span onclick="toggleTask(${t.id})" style="cursor: pointer; font-size: 1.2rem;">
+                    ${t.isCompleted ? '✅' : '⭕'}
+                </span>
+                <div>
+                    <strong>${t.title}</strong>
+                    <p style="margin: 0; font-size: 0.8rem; color: var(--text-sub);">${t.description || ''}</p>
+                </div>
+            </div>
+            <button onclick="deleteTask(${t.id})" class="btn-danger" style="background: var(--danger); color: white; border: none; padding: 5px 10px; border-radius: 5px; cursor: pointer;">Excluir</button>
+        </li>
+    `).join('');
+}
+
+document.getElementById("btnSave").onclick = async () => {
+    const titleInp = document.getElementById("title");
+    const descInp = document.getElementById("description");
+    if (!titleInp.value) return;
+
+    const newTask = { 
+        id: Date.now(), 
+        title: titleInp.value, 
+        description: descInp.value, 
+        isCompleted: false, 
+        userId: currentUser.id 
+    };
+
+    // UI Instantânea
+    tasksLocal.push(newTask);
+    renderTasks([...tasksLocal]);
+
+    const t = titleInp.value;
+    const d = descInp.value;
+    titleInp.value = ""; descInp.value = "";
+
+    const res = await fetch(`${apiUrl}/tasks`, {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ title: t, description: d, isCompleted: false, userId: currentUser.id })
+    });
+
+    if (res.ok) await loadTasks(); // Sincroniza ID real do Neon
+};
+
+window.toggleTask = async (id) => {
+    const task = tasksLocal.find(t => t.id === id);
+    if (!task) return;
+
+    task.isCompleted = !task.isCompleted;
+    renderTasks([...tasksLocal]);
+
+    await fetch(`${apiUrl}/tasks/${id}`, {
+        method: "PUT",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ isCompleted: task.isCompleted })
+    });
+};
+
+window.deleteTask = async (id) => {
+    // Restaurada a confirmação
+    if (!confirm("Tem certeza que deseja excluir esta tarefa?")) return;
+
+    // UI Instantânea
+    tasksLocal = tasksLocal.filter(t => t.id !== id);
+    renderTasks([...tasksLocal]);
+
+    await fetch(`${apiUrl}/tasks/${id}`, { method: "DELETE" });
+};
+
+document.getElementById("btnLogout").onclick = () => location.reload();
