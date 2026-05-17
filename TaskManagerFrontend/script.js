@@ -124,7 +124,8 @@ async function loadTasks() {
     try {
         const res = await fetch(`${apiUrl}/api/tarefas/usuario/${currentUser.id}`);
         if (res.ok) {
-            tasksLocal = await res.json();
+            const result = await res.json();
+            tasksLocal = result.data || result;
             renderTasks(tasksLocal);
         } else {
             handleError("Não foi possível carregar as tarefas.", new Error("Fetch tasks failed: " + res.status));
