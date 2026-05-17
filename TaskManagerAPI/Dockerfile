@@ -13,6 +13,9 @@ FROM mcr.microsoft.com/dotnet/aspnet:8.0 AS final
 WORKDIR /app
 COPY --from=build /app/publish .
 
-# Executa o contêiner com privilégios reduzidos utilizando o usuário 'app' nativo do .NET 8 (Resolve S6471)
+# Railway injeta a variável PORT — o ASP.NET Core lê ASPNETCORE_URLS
+ENV ASPNETCORE_URLS=http://+:${PORT:-8080}
+
+# Executa o contêiner com privilégios reduzidos utilizando o usuário 'app' nativo do .NET 8
 USER app
 ENTRYPOINT ["dotnet", "TaskManagerAPI.dll"]
