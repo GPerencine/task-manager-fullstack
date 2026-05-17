@@ -1,0 +1,147 @@
+:root {
+    --bg: #f8fafc;
+    --card: #ffffff;
+    --text-main: #6366f1;
+    --text-body: #1e293b;
+    --text-sub: #64748b;
+    --primary: #6366f1;
+    --border: #f1f5f9;
+    --danger-bg: #fee2e2;
+    --danger-text: #ef4444;
+}
+
+[data-theme="dark"] {
+    --bg: #0f172a;
+    --card: #1e293b;
+    --text-main: #a5b4fc;
+    --text-body: #f8fafc; /* Contraste máximo para o título no dark mode */
+    --text-sub: #94a3b8;
+    --primary: #6366f1;
+    --border: #334155;
+    --danger-bg: #450a0a;
+    --danger-text: #f87171;
+}
+
+body { 
+    background-color: var(--bg); 
+    color: var(--text-body); 
+    font-family: 'Inter', system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif; 
+    margin: 0; 
+    display: flex; 
+    justify-content: center; 
+    padding: 3rem 1rem;
+    transition: 0.3s;
+}
+
+.container { 
+    width: 100%;
+    max-width: 480px; 
+    background: var(--card); 
+    padding: 2.5rem;
+    border-radius: 28px;
+    box-shadow: 0 20px 50px rgba(0,0,0,0.04);
+    position: relative;
+}
+
+/* BOTÃO SAIR (Estilo Pílula Moderno) */
+#btnLogout {
+    position: absolute;
+    top: 20px;
+    right: 20px;
+    background: var(--danger-bg);
+    color: var(--danger-text);
+    border: none;
+    padding: 8px 16px;
+    border-radius: 12px;
+    font-size: 0.75rem;
+    font-weight: 700;
+    cursor: pointer;
+    transition: 0.2s;
+    display: none; /* Só aparece após login */
+}
+#btnLogout:hover { transform: translateY(-2px); filter: brightness(0.9); }
+
+/* BOTÃO TEMA (Flutuante Circular) */
+.btn-theme { 
+    position: fixed; top: 25px; right: 25px; 
+    width: 50px; height: 50px;
+    border-radius: 50%; border: 1px solid var(--border);
+    background: var(--card); cursor: pointer; font-size: 1.3rem;
+    box-shadow: 0 10px 20px rgba(0,0,0,0.1);
+    display: flex; align-items: center; justify-content: center;
+    z-index: 100;
+}
+
+/* INPUTS E BOTÕES PRINCIPAIS */
+input, textarea { 
+    width: 100%; padding: 1rem; margin-bottom: 1rem;
+    border: 1px solid var(--border); border-radius: 14px; 
+    background: var(--bg); color: var(--text-body); box-sizing: border-box; resize: none;
+}
+
+#btnSave, #btnLogin, #btnSignUp { 
+    width: 100%; background: var(--primary); color: white; border: none; 
+    padding: 1.1rem; border-radius: 16px; font-weight: 700; cursor: pointer;
+}
+
+.task-item {
+    background: var(--card); 
+    border: 1px solid var(--border);
+    padding: 1.2rem; 
+    border-radius: 20px; 
+    margin-bottom: 1rem;
+    display: flex; 
+    align-items: center; 
+    justify-content: space-between;
+    gap: 10px;
+    
+    /* --- EFEITO DE RESSALTO --- */
+    transition: all 0.3s cubic-bezier(0.25, 0.8, 0.25, 1);
+    cursor: default;
+}
+
+.task-item:hover {
+    transform: translateY(-4px) scale(1.02); /* Sobe e cresce levemente */
+    box-shadow: 0 12px 20px rgba(99, 102, 241, 0.1); /* Sombra suave roxa */
+    border-color: var(--primary); /* Borda brilha no roxo */
+}
+
+.task-content {
+    display: flex;
+    align-items: center;
+    gap: 15px;
+    flex: 1;
+}
+
+/* Ajuste de Contraste para o Título */
+.task-item strong {
+    display: block;
+    font-size: 1rem;
+    color: var(--text-body); /* Adaptável ao Dark Mode */
+    transition: color 0.3s;
+}
+
+.task-item.completed strong {
+    text-decoration: line-through;
+    opacity: 0.4;
+}
+
+
+.btn-danger { 
+    background: var(--danger-bg) !important; 
+    color: var(--danger-text) !important; 
+    border: none;
+    padding: 10px 18px; 
+    border-radius: 12px;
+    font-weight: 700;
+    font-size: 0.8rem;
+    cursor: pointer;
+    flex-shrink: 0;
+    transition: 0.2s;
+}
+
+.btn-danger:hover {
+    background: var(--danger-text) !important;
+    color: white !important;
+    transform: scale(1.05);
+}

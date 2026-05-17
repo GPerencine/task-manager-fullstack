@@ -1,0 +1,41 @@
+<!DOCTYPE html>
+<html lang="pt-br" data-theme="light">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Task Manager Pro</title>
+    <link rel="stylesheet" href="style.css">
+</head>
+<body>
+    <button id="btnTheme" class="btn-theme">🌓</button>
+    <div class="container">
+        <header>
+            <div style="display: flex; justify-content: space-between; align-items: center;">
+                <h1>Minhas Tarefas</h1>
+                <button id="btnLogout">Sair</button>
+            </div>
+            <p>Gerencie seu dia com eficiência</p>
+        </header>
+
+        <div id="auth-container" class="input-group">
+            <input type="text" id="username" placeholder="Nome de usuário">
+            <input type="password" id="password" placeholder="Sua senha">
+            <div style="display: flex; gap: 10px;">
+                <button id="btnLogin">Entrar</button>
+                <button id="btnSignUp" class="btn-secondary">Cadastrar</button>
+            </div>
+        </div>
+
+        <div id="todo-container" style="display: none;">
+            <div class="input-group">
+                <input type="text" id="title" placeholder="O que precisa ser feito?">
+                <textarea id="description" placeholder="Adicione detalhes (opcional)"></textarea>
+                <button id="btnSave">Adicionar Tarefa</button>
+            </div>
+            <div id="message"></div>
+            <ul id="taskList"></ul>
+        </div>
+    </div>
+    <script type="module" src="script.js"></script>
+</body>
+</html>

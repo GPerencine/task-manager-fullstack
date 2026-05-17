@@ -1,0 +1,91 @@
+name: CI/CD Pipeline
+
+on:
+  push:
+    branches: [ main, master ]
+  pull_request:
+    branches: [ main, master ]
+
+jobs:
+  build-and-test:
+    runs-on: ubuntu-latest
+    env:
+      SONAR_TOKEN: ${{ secrets.SONAR_TOKEN }}
+      CODECOV_TOKEN: ${{ secrets.CODECOV_TOKEN }}
+      GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+    
+    steps:
+    - name: Checkout Repository
+      uses: actions/checkout@v4
+      with:
+        fetch-depth: 0 # Requisitado pelo SonarQube para análise de histórico
+
+    - name: Setup JDK 17
+      if: env.SONAR_TOKEN != ''
+      uses: actions/setup-java@v4
+      with:
+        distribution: 'zulu'
+        java-version: '17'
+
+    - name: Setup .NET
+      uses: actions/setup-dotnet@v4
+      with:
+        dotnet-version: |
+          8.0.x
+          10.0.x
+
+    - name: Cache SonarQube Cloud packages
+      if: env.SONAR_TOKEN != ''
+      uses: actions/cache@v4
+      with:
+        path: ~/.sonar/cache
+        key: ${{ runner.os }}-sonar
+        restore-keys: ${{ runner.os }}-sonar
+
+    - name: Cache SonarQube scanner
+      if: env.SONAR_TOKEN != ''
+      id: cache-sonar-scanner
+      uses: actions/cache@v4
+      with:
+        path: ~/.sonar/scanner
+        key: ${{ runner.os }}-sonar-scanner
+        restore-keys: ${{ runner.os }}-sonar-scanner
+
+    - name: Install SonarQube Scanner
+      if: env.SONAR_TOKEN != '' && steps.cache-sonar-scanner.outputs.cache-hit != 'true'
+      run: |
+        mkdir -p ~/.sonar/scanner
+        dotnet tool install dotnet-sonarscanner --tool-path ~/.sonar/scanner
+
+    - name: Restore Dependencies
+      run: dotnet restore TaskManagerAPI/TaskManagerAPI.sln
+
+    - name: Begin SonarQube Analysis
+      if: env.SONAR_TOKEN != ''
+      run: |
+        export PATH="$PATH:$HOME/.sonar/scanner"
+        dotnet-sonarscanner begin /k:"GPerencine_task-manager-fullstack" /o:"gperencine" /d:sonar.token="$SONAR_TOKEN" /d:sonar.host.url="https://sonarcloud.io" /d:sonar.cs.cobertura.reportsPaths="**/TestResults/*/coverage.cobertura.xml"
+
+    - name: Build Solution
+      run: dotnet build TaskManagerAPI/TaskManagerAPI.sln --configuration Release
+
+    - name: Run Tests with Coverage
+      run: |
+        dotnet test TaskManagerAPI/TaskManagerAPI.sln \
+          --no-build \
+          --configuration Release \
+          --verbosity normal \
+          --collect:"XPlat Code Coverage"
+
+    - name: End SonarQube Analysis
+      if: env.SONAR_TOKEN != ''
+      continue-on-error: true
+      run: |
+        export PATH="$PATH:$HOME/.sonar/scanner"
+        dotnet-sonarscanner end /d:sonar.token="$SONAR_TOKEN"
+
+    - name: Upload coverage to Codecov
+      if: env.CODECOV_TOKEN != ''
+      uses: codecov/codecov-action@b9fd7d16f6d7d1b5d2bec1a2887e65ceed900238
+      with:
+        token: ${{ secrets.CODECOV_TOKEN }}

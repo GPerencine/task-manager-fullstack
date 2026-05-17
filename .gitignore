@@ -1,0 +1,14 @@
+bin/
+obj/
+.vs/
+.vscode/
+*.db
+*.sqlite
+[Tt]est[Rr]esults/
+
+# Configs & Secrets (Security protection)
+**/appsettings.Development.json
+**/appsettings.local.json
+**/appsettings.Development.local.json
+**/*.usersecret
+**/secrets.json
