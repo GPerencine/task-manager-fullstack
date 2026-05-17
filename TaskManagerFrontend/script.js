@@ -5,27 +5,38 @@ const apiUrl = globalThis.location.hostname === "localhost" || globalThis.locati
 let currentUser = null;
 let tasksLocal = [];
 
-// --- TRATAMENTO DE ERROS GENÉRICO ---
-function handleError(message, error) {
-    console.error(message, error);
+// --- TRATAMENTO DE MENSAGENS E ERROS ---
+function showMessage(text, type = "error") {
     const msgDiv = document.getElementById("message");
-    if (msgDiv) {
-        msgDiv.innerText = message;
+    if (!msgDiv) return;
+
+    msgDiv.innerText = text;
+    msgDiv.style.display = "block";
+    msgDiv.style.padding = "12px";
+    msgDiv.style.borderRadius = "12px";
+    msgDiv.style.marginBottom = "20px";
+    msgDiv.style.textAlign = "center";
+    msgDiv.style.fontWeight = "600";
+    msgDiv.style.fontSize = "0.9rem";
+    msgDiv.style.transition = "all 0.3s ease";
+
+    if (type === "success") {
+        msgDiv.style.color = "#15803d";
+        msgDiv.style.backgroundColor = "#dcfce7";
+    } else {
         msgDiv.style.color = "var(--danger-text)";
         msgDiv.style.backgroundColor = "var(--danger-bg)";
-        msgDiv.style.padding = "10px";
-        msgDiv.style.borderRadius = "8px";
-        msgDiv.style.marginBottom = "10px";
-        msgDiv.style.textAlign = "center";
-        msgDiv.style.fontWeight = "600";
-        setTimeout(() => {
-            msgDiv.innerText = "";
-            msgDiv.style.padding = "";
-            msgDiv.style.backgroundColor = "";
-        }, 5000);
-    } else {
-        alert(message);
     }
+
+    setTimeout(() => {
+        msgDiv.style.display = "none";
+        msgDiv.innerText = "";
+    }, 5000);
+}
+
+function handleError(message, error) {
+    console.error(message, error);
+    showMessage(message, "error");
 }
 
 // --- TEMA ---
@@ -91,7 +102,7 @@ document.getElementById("btnSignUp").onclick = async () => {
             body: JSON.stringify({ username: user, password: pass })
         });
         if (res.ok) {
-            alert("Cadastrado com sucesso! Agora clique em Entrar.");
+            showMessage("Cadastrado com sucesso! Agora clique em Entrar.", "success");
         } else {
             const errorText = await res.text();
             handleError(`Erro ao cadastrar: ${errorText || 'Usuário já existe.'}`, new Error("Registration failed: " + res.status));
