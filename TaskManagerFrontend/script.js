@@ -138,17 +138,17 @@ async function loadTasks() {
 function renderTasks(tasks) {
     const list = document.getElementById("taskList");
     list.innerHTML = tasks.map(t => `
-        <li class="task-item ${t.isCompleted ? 'completed' : ''}">
-            <div style="display: flex; align-items: center; gap: 10px; flex: 1;">
-                <span onclick="toggleTask(${t.id})" style="cursor: pointer; font-size: 1.2rem;">
-                    ${t.isCompleted ? '✅' : '⭕'}
-                </span>
-                <div>
+        <li class="task-item ${t.isCompleted ? 'completed' : ''}" onclick="toggleTask(${t.id})">
+            <div class="task-content">
+                <div class="task-checkbox">
+                    ${t.isCompleted ? `<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"><polyline points="20 6 9 17 4 12"></polyline></svg>` : ''}
+                </div>
+                <div class="task-text">
                     <strong>${t.title}</strong>
-                    <p style="margin: 0; font-size: 0.8rem; color: var(--text-sub);">${t.description || ''}</p>
+                    ${t.description ? `<p>${t.description}</p>` : ''}
                 </div>
             </div>
-            <button onclick="deleteTask(${t.id})" class="btn-danger">Excluir</button>
+            <button onclick="deleteTask(event, ${t.id})" class="btn-danger">Excluir</button>
         </li>
     `).join('');
 }
@@ -217,7 +217,8 @@ globalThis.toggleTask = async (id) => {
     }
 };
 
-globalThis.deleteTask = async (id) => {
+globalThis.deleteTask = async (event, id) => {
+    event.stopPropagation();
     if (!confirm("Deseja excluir esta tarefa?")) return;
 
     // Atualização otimista
