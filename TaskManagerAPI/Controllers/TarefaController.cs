@@ -1,12 +1,15 @@
 using Microsoft.AspNetCore.Mvc;
+using Microsoft.AspNetCore.Authorization;
 using Swashbuckle.AspNetCore.Annotations;
 using TaskManagerAPI.Models;
 using TaskManagerAPI.Repositories;
+using System.Security.Claims;
 
 namespace TaskManagerAPI.Controllers
 {
     [ApiController]
     [Route("api/tarefas")]
+    [Authorize]
     public class TarefaController : ControllerBase
     {
         private readonly ITarefaRepository _repository;
@@ -16,11 +19,14 @@ namespace TaskManagerAPI.Controllers
             _repository = repository;
         }
 
+        private int GetLoggedUserId() => int.Parse(User.FindFirst(ClaimTypes.NameIdentifier)?.Value ?? "0");
+
         [HttpGet("usuario/{userId}")]
         [SwaggerOperation(Summary = "Retorna as tarefas de um usuário com paginação")]
         [ProducesResponseType(typeof(IEnumerable<TaskItem>), 200)]
         public async Task<ActionResult<IEnumerable<TaskItem>>> GetTasksByUser(int userId, [FromQuery] int page = 1, [FromQuery] int pageSize = 20)
         {
+            if (userId != GetLoggedUserId()) return Forbid();
             var tasks = await _repository.GetTasksByUserIdAsync(userId, page, pageSize);
             return Ok(new { data = tasks, page, pageSize });
         }
@@ -45,6 +51,8 @@ namespace TaskManagerAPI.Controllers
         [ProducesResponseType(400)]
         public async Task<ActionResult<TaskItem>> CreateTask([FromBody] TarefaDTO dto)
         {
+            if (dto.UserId != GetLoggedUserId()) return Forbid();
+
             var task = new TaskItem
             {
                 Title = dto.Title,
@@ -69,6 +77,8 @@ namespace TaskManagerAPI.Controllers
             {
                 return NotFound(new { message = "Tarefa não encontrada." });
             }
+            if (task.UserId != GetLoggedUserId()) return Forbid();
+            if (dto.UserId != task.UserId) return Forbid(); // Prevent changing owner
 
             task.Title = dto.Title;
             task.Description = dto.Description;
@@ -90,6 +100,7 @@ namespace TaskManagerAPI.Controllers
             {
                 return NotFound(new { message = "Tarefa não encontrada." });
             }
+            if (task.UserId != GetLoggedUserId()) return Forbid();
 
             await _repository.DeleteTaskAsync(task);
             return NoContent();

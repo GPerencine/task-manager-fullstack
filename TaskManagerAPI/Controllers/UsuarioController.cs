@@ -2,6 +2,11 @@ using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
 using TaskManagerAPI.Data;
 using TaskManagerAPI.Models;
+using TaskManagerAPI.Repositories;
+using Microsoft.IdentityModel.Tokens;
+using System.IdentityModel.Tokens.Jwt;
+using System.Security.Claims;
+using System.Text;
 
 namespace TaskManagerAPI.Controllers
 {
@@ -9,11 +14,11 @@ namespace TaskManagerAPI.Controllers
     [Route("api/usuarios")]
     public class UsuarioController : ControllerBase
     {
-        private readonly AppDbContext _context;
+        private readonly IUsuarioRepository _usuarioRepository;
 
-        public UsuarioController(AppDbContext context)
+        public UsuarioController(IUsuarioRepository usuarioRepository)
         {
-            _context = context;
+            _usuarioRepository = usuarioRepository;
         }
 
         [HttpPost("register")]
@@ -24,28 +29,27 @@ namespace TaskManagerAPI.Controllers
                 return BadRequest("Nome de usuário e senha são obrigatórios.");
             }
 
-            if (await _context.Users.AnyAsync(u => u.Username == user.Username))
+            if (await _usuarioRepository.UserExistsAsync(user.Username))
             {
                 return BadRequest("Usuário já existe.");
             }
 
             user.Password = BCrypt.Net.BCrypt.HashPassword(user.Password);
 
-            _context.Users.Add(user);
-            await _context.SaveChangesAsync();
+            await _usuarioRepository.AddUserAsync(user);
 
             return Ok(new { user.Id, user.Username });
         }
 
         [HttpPost("login")]
-        public async Task<IActionResult> Login([FromBody] User loginData)
+        public async Task<IActionResult> Login([FromBody] User loginData, [FromServices] IConfiguration config)
         {
             if (string.IsNullOrWhiteSpace(loginData.Username) || string.IsNullOrWhiteSpace(loginData.Password))
             {
                 return BadRequest("Nome de usuário e senha são obrigatórios.");
             }
 
-            var user = await _context.Users.FirstOrDefaultAsync(u => u.Username == loginData.Username);
+            var user = await _usuarioRepository.GetUserByUsernameAsync(loginData.Username);
             if (user == null)
             {
                 return Unauthorized("Usuário ou senha inválidos.");
@@ -57,7 +61,26 @@ namespace TaskManagerAPI.Controllers
                 return Unauthorized("Usuário ou senha inválidos.");
             }
 
-            return Ok(new { user.Id, user.Username });
+            var tokenHandler = new JwtSecurityTokenHandler();
+            var jwtKey = config["Jwt:Key"] ?? "uma_chave_secreta_super_longa_para_desenvolvimento_12345!";
+            var key = Encoding.ASCII.GetBytes(jwtKey);
+            var tokenDescriptor = new SecurityTokenDescriptor
+            {
+                Subject = new ClaimsIdentity(new[]
+                {
+                    new Claim(ClaimTypes.NameIdentifier, user.Id.ToString()),
+                    new Claim(ClaimTypes.Name, user.Username)
+                }),
+                Expires = DateTime.UtcNow.AddHours(8),
+                SigningCredentials = new SigningCredentials(new SymmetricSecurityKey(key), SecurityAlgorithms.HmacSha256Signature)
+            };
+            var token = tokenHandler.CreateToken(tokenDescriptor);
+
+            return Ok(new { 
+                Id = user.Id, 
+                Username = user.Username, 
+                Token = tokenHandler.WriteToken(token) 
+            });
         }
     }
 }

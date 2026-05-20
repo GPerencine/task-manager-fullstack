@@ -5,6 +5,9 @@ using Serilog;
 using Serilog.Formatting.Json;
 using HealthChecks.UI.Client;
 using Microsoft.AspNetCore.Diagnostics.HealthChecks;
+using Microsoft.AspNetCore.Authentication.JwtBearer;
+using Microsoft.IdentityModel.Tokens;
+using System.Text;
 
 var builder = WebApplication.CreateBuilder(args);
 
@@ -22,13 +25,45 @@ if (string.IsNullOrEmpty(connectionString))
 
 // --- REGISTRO DE SERVIÇOS ---
 builder.Services.AddDbContext<AppDbContext>(options => options.UseNpgsql(connectionString));
-builder.Services.AddCors(options => options.AddPolicy("AllowAll", p => p.AllowAnyOrigin().AllowAnyMethod().AllowAnyHeader()));
+
+var allowedOrigins = builder.Configuration.GetSection("AllowedOrigins").Get<string[]>() 
+    ?? new[] { "http://localhost:5500", "http://127.0.0.1:5500", "http://localhost:3000" };
+
+builder.Services.AddCors(options => 
+{
+    options.AddPolicy("RestrictedPolicy", p => 
+        p.WithOrigins(allowedOrigins)
+         .AllowAnyMethod()
+         .AllowAnyHeader()
+         .AllowCredentials());
+});
 
 builder.Services.AddHealthChecks()
     .AddNpgSql(connectionString, name: "postgres");
 
-// Registrar o repositório
+// Registrar os repositórios
 builder.Services.AddScoped<ITarefaRepository, TarefaRepository>();
+builder.Services.AddScoped<IUsuarioRepository, UsuarioRepository>();
+
+// --- CONFIGURAÇÃO DE AUTENTICAÇÃO JWT ---
+var jwtKey = builder.Configuration["Jwt:Key"] ?? "uma_chave_secreta_super_longa_para_desenvolvimento_12345!";
+builder.Services.AddAuthentication(options =>
+{
+    options.DefaultAuthenticateScheme = JwtBearerDefaults.AuthenticationScheme;
+    options.DefaultChallengeScheme = JwtBearerDefaults.AuthenticationScheme;
+})
+.AddJwtBearer(options =>
+{
+    options.RequireHttpsMetadata = false;
+    options.SaveToken = true;
+    options.TokenValidationParameters = new TokenValidationParameters
+    {
+        ValidateIssuerSigningKey = true,
+        IssuerSigningKey = new SymmetricSecurityKey(Encoding.ASCII.GetBytes(jwtKey)),
+        ValidateIssuer = false,
+        ValidateAudience = false
+    };
+});
 
 // Registrar os Controllers
 builder.Services.AddControllers();
@@ -40,7 +75,10 @@ builder.Services.AddSwaggerGen(c => c.EnableAnnotations());
 var app = builder.Build();
 
 // --- PIPELINE DE REQUISIÇÃO HTTP ---
-app.UseCors("AllowAll");
+app.UseCors("RestrictedPolicy");
+
+app.UseAuthentication();
+app.UseAuthorization();
 
 if (app.Environment.IsDevelopment())
 {

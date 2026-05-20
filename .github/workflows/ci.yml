@@ -75,7 +75,9 @@ jobs:
           --no-build \
           --configuration Release \
           --verbosity normal \
-          --collect:"XPlat Code Coverage"
+          --collect:"XPlat Code Coverage" \
+          /p:Threshold=70 \
+          /p:ThresholdType=line
 
     - name: End SonarQube Analysis
       if: env.SONAR_TOKEN != ''
