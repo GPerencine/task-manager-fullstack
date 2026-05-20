@@ -5,6 +5,8 @@ using TaskManagerAPI.Controllers;
 using TaskManagerAPI.Models;
 using TaskManagerAPI.Repositories;
 using Xunit;
+using Microsoft.AspNetCore.Http;
+using System.Security.Claims;
 
 namespace TaskManagerAPI.Tests
 {
@@ -17,6 +19,16 @@ namespace TaskManagerAPI.Tests
         {
             _repositoryMock = new Mock<ITarefaRepository>();
             _controller = new TarefaController(_repositoryMock.Object);
+
+            var user = new ClaimsPrincipal(new ClaimsIdentity(new Claim[]
+            {
+                new Claim(ClaimTypes.NameIdentifier, "1")
+            }, "mock"));
+
+            _controller.ControllerContext = new ControllerContext
+            {
+                HttpContext = new DefaultHttpContext { User = user }
+            };
         }
 
         [Fact]
